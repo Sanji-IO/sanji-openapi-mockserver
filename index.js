@@ -29,6 +29,10 @@ var createMockServer = function(rootFolderPath, cb) {
       });
       results.resolved.paths = obj;
 
+      app.get('/', function(req, res, next) {
+        res.json(results.resolved);
+      });
+
       middleware(results.resolved, app, function(err, middleware) {
         app.use(
           middleware.metadata(),
