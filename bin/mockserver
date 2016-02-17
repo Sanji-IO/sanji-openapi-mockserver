@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+var createMockServer = require('../');
+createMockServer(process.cwd(), function() {
+  console.log('running...');
+});
