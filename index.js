@@ -7,13 +7,17 @@ var YAML = require('js-yaml');
 var fs = require('fs');
 
 var app = express();
-var PORT = process.env.PORT || 8000;
+var defaultOptions = {
+  host: '0.0.0.0',
+  port: process.env.PORT || 8000
+};
 
-var createMockServer = function(rootFolderPath, cb) {
-  var root = YAML.load(
-    fs.readFileSync(rootFolderPath + '/index.yaml').toString());
+var createMockServer = function(options, cb) {
+  options = _.defaults(options, defaultOptions);
+  var doc = YAML.load(
+    fs.readFileSync(options.rootFolderPath + '/index.yaml').toString());
   var resolveOptions = {
-    relativeBase: rootFolderPath,
+    relativeBase: options.rootFolderPath,
     loaderOptions: {
       processContent: function (content, cb) {
         return cb(null, YAML.safeLoad(content.text));
@@ -21,13 +25,19 @@ var createMockServer = function(rootFolderPath, cb) {
     }
   };
 
-  resolve(root, resolveOptions)
+  resolve(doc, resolveOptions)
     .then(function (results) {
-      var obj = {}
-      results.resolved.paths.forEach(function(path) {
-        _.merge(obj, path);
+      if (_.isArray(results.resolved.paths)) {
+        var obj = {}
+        results.resolved.paths.forEach(function(path) {
+          _.merge(obj, path);
+        });
+        results.resolved.paths = obj;
+      }
+
+      app.get('/favicon.ico', function(req, res, next) {
+        res.status(404);
       });
-      results.resolved.paths = obj;
 
       app.get('/', function(req, res, next) {
         res.json(results.resolved);
@@ -42,8 +52,8 @@ var createMockServer = function(rootFolderPath, cb) {
           middleware.mock()
         );
 
-        app.listen(PORT, function() {
-          debug('Visit http://0.0.0.0:%d', PORT);
+        app.listen(options.port, function() {
+          debug('Visit http://%s:%d', options.host, options.port);
           cb();
         });
       });

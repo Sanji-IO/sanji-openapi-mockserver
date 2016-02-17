@@ -1,6 +1,30 @@
 #!/usr/bin/env node
+var program = require('commander');
+var path = require('path');
+var package = require('../package.json');
+var debug = require('debug')('sanji:openapi:mockserver');
+
+program
+  .version(package.version)
+  .option(
+    '-I, --input <path>',
+    'Input Folder (default: current working directory)',
+    path.join(process.cwd()))
+  .option('-P, --port <port>', 'PORT of server', parseInt)
+  .option('-H, --host <host>', 'HOST of server')
+  .parse(process.argv);
+
+debug({
+  rootFolderPath: program.input,
+  port: program.port,
+  host: program.host
+});
 
 var createMockServer = require('../');
-createMockServer(process.cwd(), function() {
+createMockServer({
+  rootFolderPath: program.input,
+  port: program.port,
+  host: program.host
+}, function() {
   console.log('running...');
 });
