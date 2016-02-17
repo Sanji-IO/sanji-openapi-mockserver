@@ -10,8 +10,8 @@ program
     '-I, --input <path>',
     'Input Folder (default: current working directory)',
     path.join(process.cwd()))
-  .option('-P, --port <port>', 'PORT of server', parseInt)
-  .option('-H, --host <host>', 'HOST of server')
+  .option('-P, --port <port>', 'PORT of server (default: 8000)', parseInt)
+  .option('-H, --host <host>', 'HOST of server (default: 0.0.0.0)')
   .parse(process.argv);
 
 debug({
