@@ -12,6 +12,17 @@ var defaultOptions = {
   port: process.env.PORT || 8000
 };
 
+var aggregate = function(data) {
+  if (_.isArray(data)) {
+    var obj = {}
+    data.forEach(function(v) {
+      _.merge(obj, v);
+    });
+    data = obj;
+  }
+  return data;
+}
+
 var createMockServer = function(options, cb) {
   options = _.defaults(options, defaultOptions);
   var doc = YAML.load(
@@ -27,13 +38,8 @@ var createMockServer = function(options, cb) {
 
   resolve(doc, resolveOptions)
     .then(function (results) {
-      if (_.isArray(results.resolved.paths)) {
-        var obj = {}
-        results.resolved.paths.forEach(function(path) {
-          _.merge(obj, path);
-        });
-        results.resolved.paths = obj;
-      }
+      results.resolved.paths = aggregate(results.resolved.paths);
+      results.resolved.definitions = aggregate(results.resolved.definitions);
 
       app.get('/favicon.ico', function(req, res, next) {
         res.status(404);
